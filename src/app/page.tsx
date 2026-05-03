@@ -42,6 +42,7 @@ const SCALES = [
 
 const COUNTS_1_TO_10 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const PROGRESSION_COUNTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const NOTES_PER_CHORD = [3, 4, 5, 6, 7, 8, 9];
 
 const MOOD_PRESETS = [
   "Happy", "Mysterious", "Sad", "Angry", "Romantic", "Energetic", "Chill", "Dark"
@@ -54,13 +55,7 @@ const GENRE_EXAMPLES = [
   "Gospel", "Cinematic", "Orchestral", "Future Bass", "Synthwave", "Phonk"
 ];
 
-const AI_MODELS = [
-  { value: "gpt-4o", label: "GPT-4o (Recommended)" },
-  { value: "gpt-4o-mini", label: "GPT-4o Mini (Faster)" },
-  { value: "gpt-4-turbo", label: "GPT-4 Turbo" },
-  { value: "gpt-4", label: "GPT-4 (Best Quality)" },
-  { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo (Budget)" },
-];
+
 
 interface Progression {
   chords: string[];
@@ -73,11 +68,11 @@ export default function Home() {
   const [selectedScale, setSelectedScale] = useState("major");
   const [progressionCount, setProgressionCount] = useState(1);
   const [chordsPerProgression, setChordsPerProgression] = useState(4);
+  const [notesPerChord, setNotesPerChord] = useState(3);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [customMood, setCustomMood] = useState("");
   const [genre, setGenre] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
-  const [selectedModel, setSelectedModel] = useState("gpt-4o");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedProgressions, setGeneratedProgressions] = useState<Progression[]>([]);
   const [animationKey, setAnimationKey] = useState(0);
@@ -98,10 +93,10 @@ export default function Home() {
           scale: selectedScale,
           progressionCount,
           chordsPerProgression,
+          notesPerChord,
           mood: getMood(),
           genre,
           additionalNotes,
-          model: selectedModel,
         }),
       });
 
@@ -126,11 +121,11 @@ export default function Home() {
     setSelectedScale("major");
     setProgressionCount(1);
     setChordsPerProgression(4);
+    setNotesPerChord(3);
     setSelectedMood(null);
     setCustomMood("");
     setGenre("");
     setAdditionalNotes("");
-    setSelectedModel("gpt-4o");
     setGeneratedProgressions([]);
     toast.success("All fields cleared");
   };
@@ -260,6 +255,29 @@ export default function Home() {
                 ))}
               </div>
             </div>
+            <div className="space-y-3">
+              <Label className="text-muted-foreground">
+                Notes per Chord
+                <span className="text-xs ml-2 text-muted-foreground/70">(complexity of each chord)</span>
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {NOTES_PER_CHORD.map((count) => (
+                  <Button
+                    key={`notes-${count}`}
+                    variant={notesPerChord === count ? "default" : "secondary"}
+                    size="sm"
+                    className={`min-w-10 ${
+                      notesPerChord === count
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-accent"
+                    }`}
+                    onClick={() => setNotesPerChord(count)}
+                  >
+                    {count}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -376,32 +394,6 @@ export default function Home() {
               onChange={(e) => setAdditionalNotes(e.target.value)}
               className="bg-card border-border min-h-20 resize-none"
             />
-          </CardContent>
-        </Card>
-
-        {/* Step 6: AI Model */}
-        <Card className="border-border bg-card shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-foreground flex items-center gap-2">
-              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-                6
-              </span>
-              AI Model
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Select value={selectedModel} onValueChange={(val) => val && setSelectedModel(val)}>
-              <SelectTrigger className="bg-card border-border max-w-sm">
-                <SelectValue placeholder="Select AI model" />
-              </SelectTrigger>
-              <SelectContent>
-                {AI_MODELS.map((model) => (
-                  <SelectItem key={model.value} value={model.value}>
-                    {model.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </CardContent>
         </Card>
 
@@ -541,7 +533,7 @@ export default function Home() {
 
         <footer className="text-center text-sm text-muted-foreground pt-8 pb-4">
           <p>
-            Made for FL Studio producers. Uses OpenAI to generate chord progressions.
+            Made for FL Studio producers. Progressions follow diatonic, tonic-anchored templates (functional harmony)—not random chord guesses.
           </p>
         </footer>
       </div>
